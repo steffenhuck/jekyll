@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Strange Case of Dr. Jekyll and Mr. Hyde — a game of papers</title>
+<script data-goatcounter="https://steffenhuck.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<style>
+:root{
+  --fog:#2b2723; --paper:#f4ecd8; --ink:#241d13; --rule:#b9a888;
+  --wax:#8e2030; --muted:#6f6250;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--fog); color:var(--ink);
+  font-family:Georgia,'Times New Roman',serif;
+  line-height:1.62; transition:background .9s ease;
+  padding:1.2rem .6rem 2rem;
+}
+#sheet{
+  max-width:640px; margin:2rem auto; padding:3rem 2.6rem 2.6rem;
+  background:var(--paper);
+  background-image:repeating-linear-gradient(0deg, rgba(90,70,40,.05) 0 1px, transparent 1px 27px);
+  border:1px solid rgba(0,0,0,.35); box-shadow:0 12px 40px rgba(0,0,0,.55);
+  transition:background .9s ease, color .9s ease;
+}
+.runhead{font-size:.62rem; letter-spacing:.34em; text-align:center; color:var(--muted);
+  text-transform:uppercase; margin-bottom:1.1rem}
+.dateline{
+  font-size:.8rem; letter-spacing:.22em; text-transform:uppercase; text-align:center;
+  color:var(--wax); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  padding:.55rem .2rem; margin-bottom:1.6rem; font-weight:bold;
+}
+.prose p{margin-bottom:1rem; text-align:justify; hyphens:auto}
+.prose p:last-child{margin-bottom:0}
+.prose .handoff{font-style:italic; color:var(--muted); text-align:center; margin:1.2rem 0}
+blockquote{
+  margin:1.2rem .2rem; padding:.2rem 1.1rem; border-left:3px solid var(--rule);
+  font-size:.98em; text-align:justify;
+}
+.choices{margin-top:2rem; border-bottom:1px solid var(--rule)}
+.choices button{
+  display:block; width:100%; text-align:left; background:none; border:0;
+  border-top:1px solid var(--rule); padding:.85rem .4rem .85rem 2rem;
+  font:italic 1.02rem Georgia,serif; color:var(--ink); cursor:pointer;
+  position:relative; line-height:1.5;
+}
+.choices button::before{content:"☞"; position:absolute; left:.25rem; color:var(--wax)}
+.choices button:hover, .choices button:focus{background:rgba(142,32,48,.08); outline:none}
+.choices button.bare{text-align:center; padding-left:.4rem; color:var(--muted)}
+.choices button.bare::before{content:""}
+h1{
+  font-family:'Clarendon Text Pro','Clarendon','Century Schoolbook','Bookman Old Style',Georgia,serif;
+  font-size:1.7rem; text-align:center; letter-spacing:.06em; line-height:1.3;
+  margin:1rem 0 .6rem;
+}
+.formula{text-align:center; font-style:italic; color:var(--muted); margin-bottom:1.8rem; font-size:.95rem}
+.preface{font-size:.95rem}
+.finis{border:3px double var(--ink); padding:1.6rem 1.3rem; margin-top:2rem; text-align:center}
+.finis .word{font-size:.7rem; letter-spacing:.5em; color:var(--wax); margin-bottom:.7rem}
+.finis .name{font-variant:small-caps; letter-spacing:.24em; font-size:1.25rem; margin-bottom:.9rem}
+.finis .verdict{font-style:italic; margin-bottom:1rem}
+.finis .account{font-size:.85rem; color:var(--muted)}
+.finis ul{list-style:none; margin-top:.5rem; font-size:.82rem; font-style:italic; color:var(--muted)}
+.finis li{margin:.2rem 0}
+footer{text-align:center; margin:1.6rem 0 0}
+footer a{font-style:italic; color:#9a8f7d; text-decoration:none; font-size:.9rem}
+footer a:hover{text-decoration:underline}
+/* ————— HYDE ————— */
+body.hyde{background:#000}
+body.hyde #sheet{
+  background:#15120e;
+  background-image:repeating-linear-gradient(0deg, rgba(255,200,110,.03) 0 1px, transparent 1px 27px);
+  color:#d6c7a3; border-color:#3a2f1d;
+}
+body.hyde .dateline{
+  color:#e0a33c; border-color:#4a3a20;
+  font-family:'Haettenschweiler','Arial Narrow',Impact,sans-serif;
+  font-weight:normal; letter-spacing:.3em; font-size:.92rem;
+}
+body.hyde .choices, body.hyde .choices button{border-color:#4a3a20; color:#d6c7a3}
+body.hyde .choices button::before{color:#e0a33c}
+body.hyde .choices button:hover, body.hyde .choices button:focus{background:rgba(224,163,60,.09)}
+body.hyde blockquote{border-color:#4a3a20}
+body.hyde .runhead, body.hyde .prose .handoff, body.hyde .finis .account,
+body.hyde .finis ul{color:#8d7c58}
+body.hyde .finis{border-color:#d6c7a3}
+body.hyde .finis .word, body.hyde .finis .verdict{color:#e0a33c}
+@media (max-width:480px){
+  #sheet{padding:2rem 1.2rem; margin:.6rem auto}
+  h1{font-size:1.35rem}
+}
+</style>
+</head>
+<body>
+<div id="sheet"></div>
+<footer><a href="https://steffenhuck.github.io">steffen huck</a></footer>
+<script>
+const NODES = {
+
+title: {
+  actor:'frame', special:'title',
+  text: s => `
+  <h1>THE STRANGE CASE OF<br>DR. JEKYLL AND MR. HYDE</h1>
+  <div class="formula">a game of papers, after Robert Louis Stevenson<br>the text of 1886</div>
+  <div class="preface">
+  <p>Being the papers in the case of <b>HENRY JEKYLL</b>, M.D., D.C.L., LL.D., F.R.S., sometime of the square behind the by-street; arranged, after the death of Mr. Utterson his lawyer, by <b>MR. GUEST</b>, head clerk in that office.</p>
+  <p>A man’s hand betrays him sooner than his face. I have read every hand in this file — I once compared two of them by my master’s fire, and kept my remark to myself, as clerks do — and I say the file is honest, whatever it is besides. The papers run in order of date, and the dates run one way, like a river under fog.</p>
+  <p>One thing the reader must know before the string is untied: <i>the reader of a book follows; the reader of this book chooses.</i></p>
+  </div>`,
+  choices: s => [ {t:'Untie the string, and open the file at the first exhibit.', to:'s1'} ]
+},
+
+/* ———————— THE SPINE ———————— */
+
+s1: {
+  actor:'jekyll', date:'WINTER, 18—; PAST MIDNIGHT',
+  text: s => `
+  <p>The file opens in a doctor’s private cabinet, over an old dissecting theatre, past midnight. Dr. Henry Jekyll: fifty, large, smooth-faced, rich; a name often printed and never but to its credit; a man who has spent half a life hiding the other half. His science — “unscientific balderdash,” says his oldest friend, Dr. Hastie Lanyon, the great physician of Cavendish Square — has hunted one quarry for years: the door between a man’s two natures. “Man is not truly one, but truly two,” says the notebook.</p>
+  <p>On the table a graduated glass holds a blood-red tincture; beside it lies a paper of white salt, bought wholesale from Messrs. Maw. Mixed, they will boil, smoke and settle; drunk, they will — if the notebook is right — unseat a soul. The house sleeps. The mixture wants only its last ingredient, which is nerve.</p>`,
+  choices: s => [
+    {t:'Compound the draught, watch it settle, and drink it off at one gulp.', to:'s2'},
+    {t:'Hold back a scruple of the salt and send it for assay by a public analyst — a chemist should know his reagents — then drink.', to:'s2', set:{assay:true}, dep:'held back a scruple of the first salt for assay'},
+    {t:'Seal first a candid letter to Dr. Lanyon, heresy and all, that one living man may know what is attempted tonight; then drink.', to:'s2', set:{lanyon:true}, dep:'told Dr. Lanyon the truth before the first draught'},
+    {t:'Pour the whole business down the laboratory sink, and go up to bed one man.', to:'a1', dep:'refused the draught'}
+  ]
+},
+
+s2: {
+  actor:'hyde',
+  date: s => s.marks.has('deferred') ? 'A LATER NIGHT; NERVE FOUND AT LAST' : 'THE SAME NIGHT, TOWARDS MORNING',
+  text: s => `
+  <p>The glass drained, the pangs came, exactly as the confession would one day set them down: “a grinding in the bones, deadly nausea, and a horror of the spirit that cannot be exceeded at the hour of birth or death.” Then, sweetness. The body that got up from the chair was small, light, young; its blood ran wicked, and knew it, and was glad.</p>
+  <p>There was no mirror in the cabinet — that came later, and for this very purpose. Out in the yard the constellations looked down on the first creature of the sort their vigilance had yet disclosed to them. The house lay dark; somewhere upstairs hung the glass that could show the new face what it was.</p>`,
+  choices: s => [
+    {t:'Creep through the sleeping house to the bedroom mirror and look at what has been made; then back, and the second draught before dawn.', to:'s3'},
+    {t:'The streets first — one hour in the town wearing the new body, before any mirror gets its say; then back for the second draught.', to:'s3', mark:'firstnight', dep:'walked the town an hour on the first night'},
+    {t:'Drink again at once, unlooked-at: the second experiment is the one that matters — can the road be walked back?', to:'s3', mark:'unseen', dep:'never looked at Hyde that first night'}
+  ]
+},
+
+s3: {
+  actor:'jekyll', date:'THE WEEKS FOLLOWING',
+  text: s => `
+  <p>The road walked back. The second draught restored, in every dimension, Dr. Henry Jekyll — and the weeks following are the busiest in the file. A house is taken in Soho and furnished in good taste; a housekeeper engaged, “a creature whom I knew well to be silent and unscrupulous.” The servants in the square are told that one Mr. Edward Hyde — small, young, difficult to describe — is to have full liberty and power about the place; Poole the butler bows.</p>
+  <p>And there is the question of money, which is the question of everything, for a man who does not exist cannot cash a cheque.</p>`,
+  choices: s => [
+    {t:'Open an account at a bank in Edward Hyde’s own name, and teach your hand a backward slope for his signature.', to:'s4', set:{account:true}},
+    {t:'No account, no signature, no paper: Hyde spends what gold Jekyll carries out in his pockets, and nothing more.', to:'s4', dep:'kept Edward Hyde off the books'}
+  ]
+},
+
+s4: {
+  actor:'jekyll',
+  date: s => s.marks.has('deferred') ? 'THE MONTHS FOLLOWING' : 'SPRING',
+  text: s => `
+  <p>To Mr. Gabriel John Utterson of Gaunt Street, lawyer — a rugged, unsmiling man, “lean, long, dusty, dreary and yet somehow lovable,” and Jekyll’s oldest friend after Lanyon — the spring brings a piece of business he will hate for years. His client wishes to make a will.</p>
+  <p>Its terms: in case of the decease of Henry Jekyll, all he possesses passes to his “friend and benefactor Edward Hyde”; and in case of Dr. Jekyll’s “disappearance or unexplained absence for any period exceeding three calendar months,” the said Hyde steps into the said shoes without delay. A dead man needs no plan; a disappeared man needs a very good one.</p>`,
+  choices: s => [
+    {t:'Write the will holograph — no clerk, no witness of its making — and send it to Utterson to keep, objections and all.', to:'s5', set:{will:true}},
+    {t:'Make no will. If anything befalls the doctor, let Mr. Hyde shift for himself, penniless and unwritten.', to:'s5', dep:'made no will in Hyde’s favour'}
+  ]
+},
+
+s5: {
+  actor:'hyde', date:'THAT YEAR',
+  text: s => `
+  <p>Of the pleasures Jekyll bought in Hyde’s body, the confession says “undignified; I would scarce use a harder term.” The file uses none. In Hyde’s hands they turned monstrous.</p>`,
+  choices: s => [
+    {t:'Drink the town’s low pleasures and be home by dawn, decently, through the laboratory door.', to:'s6', mark:'lowlife'},
+    {t:'Seek out cruelty on purpose, and learn what it is to enjoy it.', to:'s6', mark:'cruel'},
+    {t:'Walk past the lit windows of Jekyll’s own friends, and despise them one by one from the dark.', to:'s6', mark:'spite'}
+  ]
+},
+
+s6: {
+  actor:'hyde', date:'A BLACK WINTER MORNING, THREE O’CLOCK',
+  text: s => `
+  <p>Street after street, all lamps and no people, the whole quarter empty as a church — and Mr. Hyde stumping home eastward at a good walk, the night’s business done. At a corner, out of a cross street, a girl of maybe eight or ten comes running as hard as she is able. The two meet, as bodies meet, at the corner.</p>
+  <p>She is down. She is screaming. A window has gone up somewhere; a man’s step is coming. There is time to decide only what kind of thing walks away from this corner, and how fast.</p>`,
+  choices: s => [
+    {t:'Trample calmly over the child’s body, and leave her screaming on the ground.', to:'s7', mark:'trampled'},
+    {t:'Stoop and press coins on her, quickly — money mends most screaming.', to:'s7', mark:'coins', dep:'stooped to the child at the corner'},
+    {t:'Run for it, down the cross street, before the window can put a face to you.', to:'s7', mark:'bolted', dep:'ran from the corner'}
+  ]
+},
+
+s7: {
+  actor:'hyde', date:'THE SAME MORNING, UNTIL THE BANKS OPENED',
+  text: s => `
+  <p>${ s.marks.has('trampled') ? 'He walked on over her, cool as a Sunday; it was the walking on that damned him. (“It wasn’t like a man,” the deposition runs; “it was like some damned Juggernaut.”)' : s.marks.has('coins') ? 'The coins scattered; the screaming went up a pitch; the step behind broke into a run.' : 'He ran; a halloa went up behind him, and heels after it.' } Mr. Richard Enfield — a well-known man about town, and kinsman to that same Mr. Utterson${ s.flags.will ? ' who keeps the will' : ', the lawyer' } — had him by the collar before the next lamp.</p>
+  <p>The girl’s family came, wild as harpies; a doctor came, dry as a bagpipe, and turned sick and white each time he looked at the prisoner. Killing being out of the question, they did the next best: a hundred pounds for the child’s family, or a scandal to make his name “stink from one end of London to the other.”</p>`,
+  choices: s => [
+    {t:'“No gentleman but wishes to avoid a scene. Name your figure.” Pay: ten in gold and a cheque for the balance signed Henry Jekyll — then wait among them till the bank opens and cashes it.', to:'s8'},
+    {t:'Let them have their scandal, and see how a name that does not exist can be made to stink.', to:'s8', mark:'defied', dep:'defied the circle of hateful faces'}
+  ]
+},
+
+s8: {
+  actor:'jekyll', date:'A FORTNIGHT AND MORE LATER; A DINNER IN THE SQUARE',
+  text: s => `
+  <p>${ s.marks.has('defied') ? 'The scandal ran, as scandals do, and reached Gaunt Street inside the week.' : 'The cheque was genuine, and the story travelled — Enfield to Utterson, on one of their Sunday walks, under the very windows of the by-street.' } So when the doctor gives one of his pleasant dinners — five or six old cronies, all intelligent, reputable men and all judges of good wine — the lawyer contrives to stay behind, and will not be put off. What he has been learning of young Mr. Hyde, he says, is abominable${ s.flags.will ? '; and there is that will of Jekyll’s, which he has never ceased to hate' : '; and a man with such a dependant should at the least have his affairs in lawful order' }.</p>
+  <p>The talk snags once on Dr. Lanyon — the third of their old trio, ten years estranged from Jekyll over this very science.</p>`,
+  choices: s => [
+    {t:'Carry it off gaily: “the moment I choose, I can be rid of Mr. Hyde” — call Lanyon a hide-bound pedant while you are at it — and beg Utterson to let a private matter sleep.', to:'s8b'},
+    {t:'Grant Utterson one true sentence — “I am painfully situated; it is one of those affairs that cannot be mended by talking” — and not a word more.', to:'s8b', mark:'guarded'},
+    {t:'Take the evening’s other rebuke to heart: write to Lanyon in the morning, and dine with the pedant inside the week.', to:'s8b', set:{lanyon:true}, dep:'made peace with Dr. Lanyon'}
+  ]
+},
+
+s8b: {
+  actor:'hyde', date:'A FINE DRY NIGHT; FROST IN THE AIR',
+  text: s => `
+  <p>The lawyer, it appears, has taken to haunting the by-street door at all hours. (“If he be Mr. Hyde,” the file has him thinking, “I shall be Mr. Seek.”) At ten o’clock, shops shut, the street solitary, small sounds carrying far, Mr. Hyde comes home with his key out — and a hand touches his shoulder: “Mr. Hyde, I think?” It is Utterson, naming himself an old friend of Dr. Jekyll’s.</p>`,
+  choices: s => [
+    {t:'Front about with an air of defiance and show him your face full; give the Soho address plainly; and when he claims common friends — “Jekyll, for instance” — snarl the lie back at him, and go in.', to:'s9'},
+    {t:'Keep your face to the door, answer nothing, and be gone into the court without giving him eyes or address.', to:'s9', mark:'hid', dep:'refused the lawyer your face'}
+  ]
+},
+
+s9: {
+  actor:'hyde', date:'LATE SUMMER; MORNING, IN THE HOUSE IN THE SQUARE',
+  text: s => `
+  <p>Months pass; the double life finds its gait. Then comes a morning, in the decent bedroom in the square, with something wrong in the waking. The bed is right; the mahogany is right; the hand on the counterpane is wrong: “lean, corded, knuckly, of a dusky pallor.” Jekyll lay down; Hyde has risen — unbidden, no draught taken, the first time the thing has moved of itself.</p>
+  <p>Dressed small, face down, past Bradshaw the footman (who stares, and draws back), across the court, up to the cabinet and the glass; and ten minutes later the doctor, restored, sits down to make a feint of breakfasting. The confession calls that morning “the Babylonian finger on the wall.” The balance is tipping; the original and better self is losing hold. Something must be resolved, and resolved now.</p>`,
+  choices: s => [
+    {t:'Resolve on abstinence: two months of the elder doctor’s life and no draught — though the Soho house may stand, and Hyde’s clothes lie folded in the cabinet; against nothing; against habit.', to:'s10'},
+    {t:'Resolve wholly: sell the Soho house within the week, burn Hyde’s clothes where they lie, and let the by-street key rust.', to:'s10', mark:'cleanbreak', dep:'burned Hyde’s clothes and sold the Soho house'},
+    {t:'This is now a case, and cases go to physicians: carry the notebook to Cavendish Square this very morning, and put yourself, as a patient, in Lanyon’s hands.', to:'c1a', show: s => s.flags.lanyon, dep:'carried the case to Dr. Lanyon'}
+  ]
+},
+
+s10: {
+  actor:'jekyll', date:'OCTOBER; TWO MONTHS KEPT',
+  text: s => `
+  <p>Two months of charity, dinners, the open air; an approving conscience. Then an hour arrives — the confession dates it only “an hour of moral weakness” — dressed exactly like any other hour.</p>`,
+  choices: s => [
+    {t:'One night only: compound the draught, lock the door behind the going-out, and take the old relief.', to:'s11'},
+    {t:'Half a dose, then — a taste, a governed taste, nothing the morning need count.', to:'s11', mark:'half'},
+    {t:'Pour the tincture into the grate, and pace the cabinet until the craving sleeps.', to:'d1', dep:'poured the tincture into the grate'}
+  ]
+},
+
+d1: {
+  actor:'jekyll', date:'THE SAME WEEK',
+  text: s => `
+  <p>Bread, work, the pew on Sunday. In church, mid-psalm, comes a shudder the doctor knows the name of — the premonitory kind. Held, this once. The week holds too.</p>`,
+  choices: s => [
+    {t:'It is no use pretending: the cabinet tonight, and the glass.', to:'s11', mark:'worn'},
+    {t:'Hold. Another week of bread and prayer, and the drawer locked on the salt.', to:'d2'}
+  ]
+},
+
+d2: {
+  actor:'hyde', date:'DAYS LATER; NOON',
+  text: s => `
+  <p>Sleep decides it. The doctor dozes in his chair after lunch, a fasting man, a whole man — and wakes at noon with the corded hand, in his own house, servants moving on every stair. The dash to the cabinet succeeds; the mirror gets its Jekyll back; but the lesson stands in the confession’s own words: “my devil had been long caged” — and caging, it now appears, is a feeding.</p>
+  <p>There is no abstinence. There is only the choosing of the hour — or being chosen.</p>`,
+  choices: s => [
+    {t:'Tonight, then, by the glass — chosen, at least, and not stolen by sleep.', to:'s11', mark:'worn'},
+    {t:'Tomorrow night, after one more clean day, for pride’s dry sake.', to:'s11', mark:'worn'}
+  ]
+},
+
+s11: {
+  actor:'hyde', date:'AN OCTOBER NIGHT; A LANE NEAR THE RIVER, UNDER A FULL MOON',
+  text: s => `
+  <p>He drank${ s.marks.has('worn') ? ', after the long fast,' : '' } and the devil came out roaring.</p>
+  <p>The file holds a maid-servant’s deposition. She sat at her window over the lane at eleven, the early night cloudless, the lane brilliantly lit by the full moon: “she became aware of an aged beautiful gentleman with white hair, drawing near along the lane; and advancing to meet him, another and very small gentleman.” The old man bows; accosts Mr. Hyde “with a very pretty manner of politeness”; seems, from his pointing, to be only inquiring his way. The moon is on his face as he speaks, and the face is all innocence and old-world kindness.</p>
+  <p>In Hyde’s hand is a heavy cane — Utterson’s gift to Henry Jekyll, years since. And the civility itself, says the confession, was the spark: “I listened with an ill-contained impatience.”</p>`,
+  choices: s => [
+    {t:'Answer the old gentleman’s question civilly, and pass on down the lane.', to:'s11k'},
+    {t:'Brush past him without a word; the night is short and Soho far.', to:'s11k'},
+    {t:'Let the impatience off its chain: stamp, brandish the cane, carry on like a madman.', to:'s11k'}
+  ]
+},
+
+s11k: {
+  actor:'hyde', date:'THE SAME MOMENT',
+  text: s => `
+  <p>Whatever was intended — civility, silence, a mere passing-by — is not what happened; the confession is exact about the rate of exchange between intention and Edward Hyde: “to be tempted, however slightly, was to fall.”</p>
+  <p>The old man takes a step back, with the air of one very much surprised and a trifle hurt. And then: “Mr. Hyde broke out of all bounds and clubbed him to the earth. And next moment, with ape-like fury, he was trampling his victim under foot and hailing down a storm of blows, under which the bones were audibly shattered and the body jumped upon the roadway.” The cane breaks in the middle; one half rolls to the gutter. At her window, the maid faints. In the whole lit lane, nothing else moves.</p>`,
+  choices: s => [
+    {t:'To Soho at a walk, not a run: burn every paper in the rooms, the cheque-book into the fire, and home by back ways.', to:'s11b'},
+    {t:'Straight home to the cabinet, now, and let Soho keep its own secrets.', to:'s11b', mark:'leftpapers', dep:'left the Soho papers for the police'}
+  ]
+},
+
+s11b: {
+  actor:'hyde', date:'BEFORE DAWN',
+  text: s => `
+  <p>${ s.marks.has('leftpapers') ? 'Soho was left to its silence and its drawers.' : 'The Soho grate ate the papers, the cheque-book last.' } At the by-street door, the key was ground under a heel. “Hyde had a song upon his lips as he compounded the draught, and as he drank it, pledged the dead man.” By morning-light, Henry Jekyll was on his knees, in tears.</p>`,
+  choices: s => [
+    {t:'Sleep, if sleep will come to such a house.', to:'s12'},
+    {t:'Kneel the night out — prayers, and the crowd of hideous images between them.', to:'s12', mark:'knelt'}
+  ]
+},
+
+s12: {
+  actor:'jekyll', date:'THE NEXT MORNING',
+  text: s => `
+  <p>The newsboys cry it before noon: the victim has a name, Sir Danvers Carew, Member of Parliament — a client, as it happens, of Mr. Utterson; and in the dead man’s pocket, a letter addressed to the lawyer himself. By late afternoon Utterson is at the cabinet door, grey as the fog outside it: “You have not been mad enough to hide this fellow?”</p>
+  <p>The city is one hue and cry; the reward runs to thousands; the only safe Hyde is a Hyde who never existed. What does the doctor put into the lawyer’s hands?</p>`,
+  choices: s => [
+    {t:'A letter in an odd, upright, backward-sloping hand, signed Edward Hyde: his benefactor need not fear, the writer has “means of escape on which he places a sure dependence.” And swear besides: “I am done with him in this world.”', to:'s13', mark:'forged'},
+    {t:'Nothing but the oath itself, sworn on your honour, with both hands.', to:'s13', mark:'silent', dep:'gave Utterson only an oath'},
+    {t:'The truth. All of it — the salt, the glass, the lane — with the lawyer’s own eyes for jury.', to:'c3a', dep:'confessed, the morning after the murder'}
+  ]
+},
+
+s13: {
+  actor:'jekyll', date:'NOVEMBER; DECEMBER',
+  text: s => `
+  <p>Hyde is blotted out — wanted, priced, hunted, and simply gone, “as though he had never existed.” And a new life begins for Dr. Jekyll, as if the murder had paid for it: the table fills, he is out, he is busy, he does good, and “his face seemed to open and brighten, as if with an inward consciousness of service.” Two months, the file notes, of something very like happiness.</p>
+  <p>It records also the small private accounts a happy man settles.</p>`,
+  choices: s => [
+    {t:'Settle one in the by-street: an anonymous endowment on the family of a girl once knocked down at a corner there.', to:'s14', mark:'charity'},
+    {t:'Settle one in Cavendish Square: seek out Lanyon again — dinners, walks, the old trio patched whole.', to:'s14', set:{lanyon:true}, mark:'trio'},
+    {t:'Settle none; keep the good works public and the ledger shut. The hospital wards twice a week are penance enough.', to:'s14', mark:'wards'}
+  ]
+},
+
+s14: {
+  actor:'jekyll', date:'THE EIGHTH OF JANUARY',
+  text: s => `
+  <p>A dinner card survives: Utterson on the host’s right, Lanyon on his left; the trio, for one evening, inseparable again${ s.marks.has('trio') || s.flags.lanyon ? ', and easy with it' : ', or very nearly' }.</p>`,
+  choices: s => [
+    {t:'Rise and give the toast: to old friends.', to:'s15'},
+    {t:'Say little; watch the two faces by candlelight, and hoard them.', to:'s15', mark:'hoard'}
+  ]
+},
+
+s15: {
+  actor:'hyde', date:'THE NINTH OF JANUARY; REGENT’S PARK',
+  text: s => `
+  <p>A fine, clear day, wet underfoot where the frost has melted; the Park full of winter chirrupings. On a bench in the sun the doctor reflects that he is, after all, like his neighbours — and smiles, comparing his active goodwill with the lazy cruelty of their neglect. On the vainglorious thought comes a qualm, a horrid nausea, the most deadly shuddering; and it passes, and leaves him looking down at “the hand that lay on my knee, corded and hairy.”</p>
+  <p>Edward Hyde, in the open noon, in a public park: the most hunted head in England on a gentleman’s bench. The drugs are locked in the cabinet, across half of London. The servants would give him to the police at the area railing.</p>`,
+  choices: s => [
+    {t:'A hansom to a hotel in Portland Street whose name you chance to remember; ink, paper, wax: Lanyon must be made to fetch the drawer, and midnight survived till then.', to:'s16'},
+    {t:'Dusk first, and your own mews: perhaps the theatre door can be reached with no eyes on the yard.', to:'s16', mark:'neardash', dep:'tried your own back door as Hyde'},
+    {t:'The bank at ten tomorrow, the docks by noon: Edward Hyde has money of his own, and the sea has never asked a man his face.', to:'c2a', show: s => s.flags.account, dep:'ran for the sea with Hyde’s money'}
+  ]
+},
+
+s16: {
+  actor:'hyde', date:'THE SAME DAY, UNTIL MIDNIGHT',
+  text: s => `
+  <p>${ s.marks.has('neardash') ? 'The mews at dusk was a near thing — Bradshaw’s voice in the yard, a lantern swinging — and the fog took Mr. Hyde back out of it, poorer by an hour. Then the hotel in Portland Street, where' : 'At the hotel in Portland Street' } the attendants tremble and obey. Two letters are written and sent registered — one to Lanyon, one to Poole — then a closed cab, driven to and fro about the streets until the driver’s eye grows curious; then on foot, misfitting clothes among the nocturnal passengers, counting the minutes to midnight. A woman speaks to him under a lamp — offering, the confession thinks, a box of lights.</p>`,
+  choices: s => [
+    {t:'Smite her in the face, and walk on.', to:'s17'},
+    {t:'Past her, fists deep in the borrowed pockets, eyes down.', to:'s17', mark:'sparedwoman', dep:'spared the match-seller'}
+  ]
+},
+
+s17: {
+  actor:'hyde', date:'MIDNIGHT; CAVENDISH SQUARE',
+  text: s => `
+  <p>Dr. Lanyon${ s.flags.lanyon ? ' — no stranger lately, whatever tonight will make him —' : '' } has done everything the letter asked; the file holds his own account of it: the locksmith, two hours at Jekyll’s cabinet door, the drawer carried home in a sheet; and afterwards an old revolver loaded, “that I might be found in some posture of self-defence.” At midnight, a small man crouching against the pillars of his portico. The consulting room’s bright light; the graduated glass fetched; the powders, the tincture; the mixture brightening, effervescing, throwing off fumes — dark purple, fading to a watery green.</p>
+  <p>The visitor sets down the glass, and turns, and looks upon his host with an air of scrutiny.</p>
+  <blockquote>“Will you be wise? will you be guided?… As you decide, you shall be left as you were before, and neither richer nor wiser… Or, if you shall so prefer to choose, a new province of knowledge and new avenues to fame and power shall be laid open to you, here, in this room, upon the instant; and your sight shall be blasted by a prodigy to stagger the unbelief of Satan.”</blockquote>
+  <p>And Lanyon, affecting a coolness he is far from possessing: “I have gone too far in the way of inexplicable services to pause before I see the end.”</p>`,
+  choices: s => [
+    {t:'“You who have denied the virtue of transcendental medicine, you who have derided your superiors — behold!” Put the glass to your lips, and drink where he stands.', to:'s18'},
+    {t:'Bow; carry the glass out past him into the night, and change unseen in the corner of the waiting cab. Let one sane man keep his sane world.', to:'s18', set:{spared:true}, dep:'spared Dr. Lanyon the sight'}
+  ]
+},
+
+s18: {
+  actor:'jekyll', date:'THE WEEKS FOLLOWING',
+  text: s => s.flags.spared ? `
+  <p>The cab swallowed the change; Lanyon was left with an emptied glass, a rifled drawer and a civil stranger’s bow — an errand he will never understand, told to no one. He is alive; he writes twice, puzzled, kindly, and is not answered.</p>
+  <p>The seclusion in the square is total even so, for the changes now come without asking, and only the draught holds the doctor’s face on. Utterson writes too, complaining of a door shut even to him, begging a word.</p>` : `
+  <p>“O God!” — the file gives Lanyon’s scream twice over — and then it gives the bill of what the sight cost him: the rosy man gone pale, the flesh fallen, “his death-warrant written legibly upon his face.” He took to his bed within the month and did not leave it; but wrote his account first, and sealed it for Utterson: <i>not to be opened till the death or disappearance of Dr. Henry Jekyll.</i></p>
+  <p>The seclusion in the square is now total. Utterson writes, asking the cause of this last break, begging a word.</p>`,
+  choices: s => [
+    {t:'Answer Utterson once, in a hand that shakes: “I have brought on myself a punishment and a danger that I cannot name… you must suffer me to go my own dark way.”', to:'s19'},
+    {t:'Burn the letter unanswered; the fewer words now, the fewer lies.', to:'s19', mark:'burntletter', dep:'left Utterson’s letter unanswered'}
+  ]
+},
+
+s19: {
+  actor:'jekyll', date:'FEBRUARY',
+  text: s => `
+  <p>The cabinet over the theatre becomes the whole world: meals left on the stair, the fire kept in, the glass presses glittering. The doses double, then treble; sleep, or even a doze in the chair, is now Hyde’s door, and only the draught holds the doctor’s face on. ${ s.flags.spared ? 'Lanyon, who knows only of a midnight errand, writes again; the letter lies unopened.' : 'Lanyon, who might once have been consulted, is past all consulting now.' }</p>
+  <p>And the salt runs low. Poole — butler these twenty years, and the last loyalty left in the house — is sent flying to every wholesale chemist in town; sample after sample is mixed, shows the first change of colour and not the second, and is thrown back. One such note survives, composed enough until the pen splutters: “For God’s sake, find me some of the old.”</p>`,
+  choices: s => [
+    {t:'Ransack London: every firm, every year’s stock, Maw’s own cellar turned over — somewhere there must be salt of the old kind.', to:'s20'},
+    {t:'The certificate. The analyst’s assay of the first purchase — held back on the first night of all, a chemist’s caution — fetch it out of its drawer, and hunt not the old salt but the impurity itself.', to:'r1', show: s => s.flags.assay, dep:'hunted the impurity by its certificate'},
+    {t:'Against the worst, begin setting the truth on paper: a full statement of the case, sealed for whoever outlives it — and let the ransacking go on meanwhile.', to:'s20', mark:'began'}
+  ]
+},
+
+s20: {
+  actor:'jekyll', date:'A SUNDAY LATE IN FEBRUARY',
+  text: s => `
+  <p>A courtyard hour of remission: the middle window half open, the doctor taking the air “with an infinite sadness of mien, like some disconsolate prisoner.” Below in the court stand Utterson and his kinsman Enfield — the same Enfield who once collared Hyde over a trampled child. Talk starts up, quite ordinary, quite kind; a turn in the streets is proposed and declined; a smile is exchanged.</p>
+  <p>And then the smile is struck from the doctor’s face by the beginning he knows too well — the shudder, the loosening —</p>`,
+  choices: s => [
+    {t:'Thrust the window down, out of their sight, while the hands are still your own.', to:'s21'},
+    {t:'Cry out to them — “take me! hold me down! fetch the police!” — and let two honest men see the rest.', to:'taken', mark:'late', mark2:'window', dep:'cried out from the window to be taken'}
+  ]
+},
+
+s21: {
+  actor:'hyde', date:'THE FIRST WEEK OF MARCH',
+  text: s => `
+  <p>Eight days behind a locked red-baize door; orders thrown out on the stair in a changed voice; once — it is Poole’s evidence — a weeping “like a woman or a lost soul.” Two tenants now, hour about; and the small spites of the lower one want doing.</p>`,
+  choices: s => [
+    {t:'Let him scrawl blasphemies in the pious book Jekyll loved, and be spent by it.', to:'s22', mark:'blasphemy'},
+    {t:'Let him burn the letters, and claw the portrait of Jekyll’s father from its frame.', to:'s22', mark:'portrait'},
+    {t:'Refuse him every small spite: rock in the chair, hands under knees, and wait for the next hour of your own.', to:'s22', mark:'resisted'}
+  ]
+},
+
+s22: {
+  actor:'jekyll', date:'THE LAST DAY; AFTERNOON',
+  text: s => `
+  <p>${ s.marks.has('began') ? 'The statement, begun in February against this very day, wants only its ending. The last of the old powders is weighed out on a glass saucer; while it works, there is a hand to write with.' : 'The last of the old powders is weighed out on a glass saucer; while it works, there is a hand to write with.' }</p>
+  <p class="handoff">Here the clerk’s arrangement ends. What follows is the last exhibit, in the doctor’s own script, unabridged.</p>
+  <blockquote>I was born in the year 18— to a large fortune, endowed besides with excellent parts, inclined by nature to industry, fond of the respect of the wise and good among my fellowmen, and thus, as might have been supposed, with every guarantee of an honourable and distinguished future… I concealed my pleasures; and when I reached years of reflection, and began to look round me and take stock of my progress and position in the world, I stood already committed to a profound duplicity of life… Though so profound a double-dealer, I was in no sense a hypocrite; both sides of me were in dead earnest… With every day, and from both sides of my intelligence, the moral and the intellectual, I thus drew steadily nearer to that truth, by whose partial discovery I have been doomed to such a dreadful shipwreck: that man is not truly one, but truly two.</blockquote>`,
+  choices: s => [ {t:'(the statement continues)', to:'s22b', bare:true} ]
+},
+
+s22b: {
+  actor:'jekyll', date:'THE STATEMENT, CONTINUED',
+  text: s => `
+  <blockquote>…late one accursed night, I compounded the elements, watched them boil and smoke together in the glass, and when the ebullition had subsided, with a strong glow of courage, drank off the potion. The most racking pangs succeeded: a grinding in the bones, deadly nausea, and a horror of the spirit that cannot be exceeded at the hour of birth or death… I knew myself, at the first breath of this new life, to be more wicked, tenfold more wicked, sold a slave to my original evil; and the thought, in that moment, braced and delighted me like wine… I saw for the first time the appearance of Edward Hyde.</blockquote>
+  <blockquote>My devil had been long caged, he came out roaring… With a transport of glee, I mauled the unresisting body, tasting delight from every blow; and it was not till weariness had begun to succeed, that I was suddenly, in the top fit of my delirium, struck through the heart by a cold thrill of terror.</blockquote>
+  ${ s.flags.spared ? '<blockquote>Of the midnight at Lanyon’s I will set down only this: that I spared him the sight, and cannot tell, to this hour, whether I spared a friend or discarded a witness.</blockquote>' : '' }
+  <blockquote>My provision of the salt, which had never been renewed since the date of the first experiment, began to run low. I sent out for a fresh supply and mixed the draught; the ebullition followed, and the first change of colour, not the second; I drank it and it was without efficiency… I am now persuaded that my first supply was impure, and that it was that unknown impurity which lent efficacy to the draught.</blockquote>`,
+  choices: s => [ {t:'(the statement continues)', to:'s22c', bare:true} ]
+},
+
+s22c: {
+  actor:'jekyll', date:'THE STATEMENT, CONCLUDED',
+  text: s => `
+  <blockquote>About a week has passed, and I am now finishing this statement under the influence of the last of the old powders. This, then, is the last time, short of a miracle, that Henry Jekyll can think his own thoughts or see his own face (now how sadly altered!) in the glass… Will Hyde die upon the scaffold? or will he find courage to release himself at the last moment? God knows; I am careless; this is my true hour of death, and what is to follow concerns another than myself. Here then, as I lay down the pen and proceed to seal up my confession, I bring the life of that unhappy Henry Jekyll to an end.</blockquote>
+  <p>On the business table lie besides: a will drawn fresh in the same eccentric terms, but where Edward Hyde stood, the name Gabriel John Utterson; and a short note to the same address. The pen is down. The pangs are beginning.</p>`,
+  choices: s => [
+    {t:'Seal the confession in a large envelope with the will and the note, superscribed to Utterson, and leave it uppermost on the table.', to:'s23'},
+    {t:'Feed every leaf to the cabinet fire, will and all, and let the case die of silence.', to:'s23', mark:'burned', dep:'burned the confession'}
+  ]
+},
+
+s23: {
+  actor:'hyde', date:'THAT NIGHT',
+  text: s => `
+  <p>What paces the cabinet now paces on Hyde’s feet — lightly, oddly, with a certain swing — and weeps in Hyde’s voice, and listens. It has heard Poole’s knock these eight days; tonight Poole has not come alone. Feet in the theatre below; a candle set down; a silence of people listening. Then the lawyer’s voice, very loud: “Jekyll, I demand to see you… if not by fair means, then by foul — if not of your consent, then by brute force!”</p>
+  <p>The axe is in Poole’s hands. On the table stands a small white phial${ s.marks.has('burned') ? '; in the grate, black leaves of paper crumble' : ', beside the sealed envelope' }. The voice that answers out of this body cries: “Utterson, for God’s sake, have mercy!”</p>`,
+  choices: s => [
+    {t:'The phial, before the fifth blow of the axe falls — the one door out that wants no salt.', to:'e1'},
+    {t:'Draw the bolt; stand small in Jekyll’s clothes in the wreck of the doorway; and be taken.', to:'taken', mark:'late', mark2:'door', dep:'drew the bolt on the last night'}
+  ]
+},
+
+e1: {
+  actor:'frame', date:'MARCH, 18—; THE LAST NIGHT OF THE CASE',
+  finis:{ name:'his true hour of death', verdict:'You died on Stevenson’s schedule.' },
+  text: s => `
+  <p>The door fell at the fifth blow. In the quiet lamplight, a good fire, the kettle singing its thin strain, the things laid out for tea: “the quietest room, you would have said… the most commonplace that night in London” — and right in the middle, still twitching, the body of a small man in clothes far too large for him. The smell of kernels hung on the air; the crushed phial was in the hand. “We have come too late,” said Utterson, “whether to save or punish.”</p>
+  ${ s.marks.has('burned')
+    ? '<p>On the business table, nothing bore his name; in the grate, a mat of burned paper crumbled at a touch. No statement was ever found. What you have been reading is, from this leaf back, the clerk’s conjecture — worked up from depositions, cheque-stubs and the evidence of hands. The truth went up the cabinet chimney.</p>'
+    : '<p>The large envelope on the table bore the lawyer’s name. He read the enclosures that night by his own fire — ' + ( s.flags.spared ? '' : 'Lanyon’s sealed narrative first, then ' ) + 'the confession you have just watched written — and by the time he had done, the man he mourned had two names and one grave.</p>' }`
+},
+
+taken: {
+  actor:'hyde',
+  date: s => s.marks.has('window') ? 'THAT SUNDAY; THE COURT AND THE THEATRE' : 'THE SAME NIGHT; THE WRECK OF THE DOOR',
+  text: s => s.marks.has('window') ? `
+  <p>They came over the court railing at a run — Enfield’s shoulder to the theatre door, Utterson shouting for a constable — and what they held down among the crates, when the shuddering stopped, was small, corded and hairy, dressed in a sad wide suit of the doctor’s clothes. The lawyer looked into the face of Mr. Hyde and said nothing at all. There was no explaining to be attempted; the explaining had been seen.</p>` : `
+  <p>The bolt drawn, the wreck of the door pulled back, and in the lamplight of the quietest room in London stood a small man in clothes far too large for him. Poole lowered the axe slowly, like a man in church. “It is I,” said what remained of a voice the butler had served for twenty years; and no one in the doorway believed it, and no one moved for a long time.</p>`,
+  choices: s => [
+    {t:'Hold out your wrists, and go quietly down the stair.', to:'c3e'},
+    {t:'Say the name — “I am Henry Jekyll” — and keep saying it: to the constable, to the crowd, to anyone.', to:'c3e', mark:'named'}
+  ]
+},
+
+/* ———————— THE REFUSAL (the drawer kept shut) ———————— */
+
+a1: {
+  actor:'jekyll', date:'THE SAME WINTER',
+  text: s => `
+  <p>The sink took it, red and smoking. But a theory poured away is still a theory: the salt stands in its paper, the notebook keeps its dates — among them one early entry, “total failure!!!”, from a batch that taught the experimenter respect — and the idea sleeps light.</p>
+  <p>At dinner in Cavendish Square, Dr. Lanyon — the great physician, red-faced, boisterous, oldest of the doctor’s friends — calls the whole direction of his work “unscientific balderdash,” and is happy, and orders more wine. It is a long winter. A cabinet keeps its own hours inside a man’s head.</p>`,
+  choices: s => [
+    {t:'The theory is sound, and the nerve will come: some night soon, mix the draught fresh — and this time drink it.', to:'s2', mark:'deferred'},
+    {t:'Winter it out: the drawer locked, the key with the house-keys, the work turned to publishable chemistry.', to:'a2'},
+    {t:'Answer Lanyon across the table with the notebook itself: publish the theory, proofless, and let the profession laugh as it likes.', to:'a2', mark:'papernote'}
+  ]
+},
+
+a2: {
+  actor:'jekyll', date:'SPRING, AND AFTER',
+  text: s => `
+  <p>The season turns; the pleasures go on being taken in the doctor’s own person, guiltily, bracketed by resolutions — the ordinary secret sinning of an ordinary respectable man. ${ s.marks.has('papernote') ? 'The theory, read to a thin Thursday audience, is filed by the profession under <i>harmless</i>. ' : '' }The apparatus gathers its dust-sheets.</p>
+  <p>And still, some nights, coming up the stair, he can feel the cabinet door at the top of the house like a tooth the tongue goes back to.</p>`,
+  choices: s => [
+    {t:'One trial. Science demands its proof, and a man may surely visit what he is master of — one night, one draught, one look in the glass.', to:'s2', mark:'deferred'},
+    {t:'Burn the notebooks; sell the glass and copper to a college salesroom; brick the tooth out of the jaw.', to:'a3', mark:'burnedscience'},
+    {t:'Keep everything locked and untouched. A man may own a drawer and not open it.', to:'a3', mark:'keptlocked'}
+  ]
+},
+
+a3: {
+  actor:'frame', date:'YEARS; FRAGMENTS',
+  text: s => `
+  <p>Of the years that follow, the file holds dinner cards, subscription lists, a testimonial clock. Dr. Jekyll grew old on the right side of his own door; walked on Sundays with Utterson; quarrelled amiably, to the last, at Lanyon’s table. ${ s.marks.has('keptlocked') ? 'The drawer stayed locked. He looked at it, some evenings, the way other men look at the sea.' : 'Of the science, one charred corner of a notebook survives: the word <i>failure</i> legible, the exclamation marks burned away.' }</p>
+  <p>No door in any by-street ever opened to a strange small figure; no will troubled any lawyer’s safe; nobody of the name of Hyde is anywhere in these papers.</p>`,
+  choices: s => [
+    {t:'Leave the formula, sealed, to the Royal Society — to be opened fifty years after your death, when the world may perhaps deserve it.', to:'e3', mark:'bequeathed'},
+    {t:'Carry it whole into the grave: the last page into the last fire, an old man’s own hand at the grate.', to:'e3'}
+  ]
+},
+
+e3: {
+  actor:'frame', date:'AN ORDINARY DEATH, MANY YEARS ON',
+  finis:{ name:'the unopened door', verdict:'You left the story before it noticed you.' },
+  text: s => `
+  <p>Henry Jekyll died in his bed${ s.marks.has('bequeathed') ? '; a sealed parcel went to the Royal Society, where the fifty years are not yet run' : ', and the fire had had the rest' }. Utterson outlived and mourned him simply, having nothing in his safe to dread.</p>
+  <p>There is no strange case in these papers. Strictly, there are no papers. The clerk has arranged an absence.</p>`
+},
+
+/* ———————— THE CURE (the certificate) ———————— */
+
+r1: {
+  actor:'jekyll', date:'FEBRUARY; THE CERTIFICATE',
+  text: s => `
+  <p>At the bottom of a drawer, under ten years of receipts: a public analyst’s certificate, got on the first night of all, when a scruple of the first purchase was held back for assay — a chemist’s caution, forgotten the same week. Itemised in a clerk’s hand: the salt; and under <i>impurities detected</i>, a trace compound, named, quantified, dismissed.</p>
+  <p>Dismissed by everyone but the draught. It was never the salt that opened the door; it was the flaw in it. And a flaw with a name can be made to order.</p>`,
+  choices: s => [
+    {t:'Write to the analyst for a synthesis of the named impurity; test the mended draught in the smallest dose, at dawn, with Poole told to break the door at a cry.', to:'r2', mark:'careful'},
+    {t:'Write, receive, and drink the mended draught entire the same evening — hope has waited long enough.', to:'r2', mark:'reckless'}
+  ]
+},
+
+r2: {
+  actor:'jekyll', date:'THE LAST WEEK OF FEBRUARY',
+  text: s => `
+  <p>The ebullition; the first change of colour; and then — for the first time since Maw’s old stock ran out — the second. ${ s.marks.has('careful') ? 'At dawn, by the smallest dose, with Poole beyond the door:' : 'That evening, entire:' } the draught holds. The pangs come and go to order, like a servant.</p>
+  <p>Thereafter, ${ s.flags.spared ? 'a written scale is begged of Lanyon — who supplies it, and asks no question he wants answered' : 'the doctor draws up his own tapering scale' }: dose after dose, each smaller, Hyde thinning like breath on a mirror, until a morning comes when the premonitory shudder does not.</p>`,
+  choices: s => [
+    {t:'Give the dinner: Utterson' + ( s.flags.spared ? ', Lanyon,' : '' ) + ' and the old room bright, the cloth laid, the glasses up — and say nothing, ever, of why the host cannot stop smiling.', to:'e2'},
+    {t:'No dinner, no announcement: the wards on Monday, the Sunday walk resumed, an ordinary March, the first in years.', to:'e2', mark:'quietcure'}
+  ]
+},
+
+e2: {
+  actor:'jekyll', date:'SPRING AGAIN',
+  finis:{ name:'dr. jekyll was quite at ease', verdict:'You escaped the novel by the second change of colour.' },
+  text: s => `
+  <p>The fog lifted that year the way it never does. The cheval-glass — which “had seen some strange things” and would see no more — went to a dealer off the Portobello Road; the by-street door got a new coat of paint, a bell, and a knocker${ s.flags.will ? '; the will came home from Gaunt Street and went into the fire, and Utterson watched it burn with the nearest thing to a smile this file records' : '' }.</p>
+  <p>${ s.flags.spared ? 'Lanyon dined at the doctor’s left hand every Sunday after, and never asked; being, beneath the pedantry, precisely as good a man as advertised.' : 'One chair stayed empty at the Sunday dinners — sorrow keeps its hat on even in a happy house — but even that grief wore, in time, to a warmth.' } He was busy, he was much in the open air, he did good; “his face seemed to open and brighten, as if with an inward consciousness of service” — and no qualm ever again came to collect.</p>
+  <p>Regent’s Park in spring was full of chirrupings. The doctor sat on his old bench in the sun, like his neighbours; exactly, and at last, and only, like his neighbours.</p>`
+},
+
+/* ———————— CORRIDOR I: TRANSCENDENTAL MEDICINE ———————— */
+
+c1a: {
+  actor:'jekyll', date:'THE SAME MORNING; CAVENDISH SQUARE',
+  text: s => `
+  <p>Dr. Hastie Lanyon — hearty, red-faced, boisterous; the great physician of Cavendish Square; ten years estranged from Jekyll’s “unscientific balderdash” and lately softened by a mended correspondence — receives before breakfast a colleague who says: <i>I am ill in a way there is no Latin for.</i> The notebook goes across the desk: the dates, the doses, “double” six times, “total failure!!!” once, very early. And then this morning’s waking, with the wrong hand on the counterpane.</p>
+  <p>He hears it out, purple to the collar. Madness is his working diagnosis, and he says so, kindly, holding his friend’s wrist. Proof, then — proof, or the asylum register.</p>`,
+  choices: s => [
+    {t:'Offer the demonstration entire: this evening, his consulting room, his terms — his revolver in the desk drawer, if he likes.', to:'c1b'},
+    {t:'Offer chemistry first and flesh later: leave salt, tincture and notebook for him to test blind in his own laboratory for a week.', to:'c1b', mark:'blind'}
+  ]
+},
+
+c1b: {
+  actor:'hyde',
+  date: s => s.marks.has('blind') ? 'A WEEK LATER; THE CONSULTING ROOM' : 'THAT EVENING; THE CONSULTING ROOM',
+  text: s => `
+  <p>${ s.marks.has('blind') ? 'A week of blind tests brings a note in a stiff hand: the reagents are real, the reaction unexampled; <i>come.</i> ' : '' }In the bright consulting room the mixture goes green; the doctor drinks; and Lanyon, an old revolver on his knee, watches his oldest friend fold, blacken, shrink — and stand up small, with another face. The revolver stays on the knee. That is the whole of Hastie Lanyon in one fact.</p>
+  <p>When Jekyll is Jekyll again, the two of them sit a long time with the gas turned high. “This,” says Lanyon at last — and it is the pedant talking, and it is also the friend — “is either the end of medicine or the beginning of it. It will be studied. It will be studied in this room.”</p>`,
+  choices: s => [
+    {t:'Partnership whole: the notebook copied fair, two names on every page, and the cure hunted together.', to:'c1c'},
+    {t:'Doctor and patient only: he prescribes, you obey, and the science stays sealed against everyone — including him.', to:'c1c', mark:'patient'}
+  ]
+},
+
+c1c: {
+  actor:'jekyll', date:'AUTUMN; THE TWO-MAN LABORATORY',
+  text: s => `
+  <p>The regimen is Lanyon’s: doses tapered on a written scale; the Soho house given up; the by-street key surrendered to his keeping like a drunkard’s bottle. Twice the tapering fails, and Hyde walks the consulting room raging while the old physician sits still and takes notes — and the notes themselves prove a leash, for Hyde, it develops, is vain of his cunning but afraid of a witness.</p>
+  <p>By November the interval between draughts is three weeks. There remains the oldest question in the profession: when is a result a cure — and whom does one tell?</p>`,
+  choices: s => [
+    {t:'Tell the profession: draft a joint communication to the learned societies — the polity of man, announced with proofs.', to:'c1d'},
+    {t:'Tell no one, ever: the cure first, the silence forever, two names on nothing.', to:'c1e'}
+  ]
+},
+
+c1d: {
+  actor:'jekyll', date:'WINTER; THE SESSION',
+  text: s => `
+  <p>The paper is read on a Thursday evening to the assembled Fellows: <i>On a Chemical Dissociation of the Moral Person.</i> Ten minutes in, the hall is on its feet; the word <i>fraud</i> is used, and the word <i>Bedlam</i>. Proof is demanded from the floor — and proof stands at the lectern, in a tall respectable body, with a folded dose in its waistcoat pocket.</p>`,
+  choices: s => [
+    {t:'Give the Fellows their proof: mix, drink, and let the assembled mind of medicine watch the moral person dissociate.', to:'c1f', mark:'public'},
+    {t:'Refuse the floor; withdraw the paper; be hissed down the steps a charlatan, and keep the cure.', to:'c1f', mark:'branded'}
+  ]
+},
+
+c1e: {
+  actor:'jekyll', date:'WINTER; THE REGIMEN',
+  text: s => `
+  <p>Secrecy, then, and the written scale tapering toward zero. One relapse at Christmas — a bad one; a window broken, a coachman struck — is entered by Lanyon in the lab-book under <i>observed; adverse; continue.</i></p>`,
+  choices: s => [
+    {t:'Continue: obey the written scale down to nothing, though the nights howl.', to:'c1f', mark:'regimen'},
+    {t:'Continue — but keep back, unentered in Lanyon’s book, one folded paper of the old salt. Against nothing; against habit.', to:'c1f', mark:'heldback'}
+  ]
+},
+
+c1f: {
+  actor:'frame', date:'THE YEARS AFTER, IN MINUTES AND LAB-BOOKS',
+  text: s => `
+  <p>${ s.marks.has('public') ? 'The demonstration emptied the hall in ninety seconds and filled the newspapers for a year. Medicine split; the Church preached on it; a commission sat, and could agree on nothing, for the specimen declined to recur on schedule. Jekyll was ruined for dinner parties and made for history.' : s.marks.has('branded') ? 'The paper was withdrawn; the reputation went with it. The College knows Dr. Jekyll now as the charlatan who blinked. Only one Fellow still dines with him weekly, and never says why.' : 'The lab-book runs to four volumes. The last entry on the dosing scale is a zero, twice underlined, in Lanyon’s hand.' }</p>
+  <p>What the file attests either way: Hyde thinned, year by year, to a shadow that crosses the doctor’s face when he is tired — and Hastie Lanyon, who in another arrangement of these papers dies of a sight shown him at midnight, grew old instead: disagreeable, triumphant, and alive.${ s.marks.has('heldback') ? ' In the doctor’s waistcoat a folded paper, never once opened, wore soft at the creases.' : '' }</p>`,
+  choices: s => [
+    {t:'Let the work die with the two of you: every book to the fire, by compact, on the survivor’s honour.', to:'e4'},
+    {t:'Leave it, jointly signed and sealed, to the College — to be opened in fifty years.', to:'e4', mark:'legacy'}
+  ]
+},
+
+e4: {
+  actor:'frame', date:'TWO OLD MEN',
+  finis:{ name:'a new province of knowledge', verdict:'You escaped the novel in consulting hours.' },
+  text: s => `
+  <p>They quarrelled to the end, publicly, at one another’s tables, about transcendental medicine — the one calling the other a hide-bound pedant, the pedant giving as good — and each kept the other’s secret like a second spine. ${ s.marks.has('legacy') ? 'The sealed parcel waits at the College still; the fifty years are not yet run.' : 'The fire took four volumes and a notebook of dates; the survivor watched it burn, lived eighteen months more, and said nothing.' }</p>
+  <p>Of Edward Hyde the file holds, at the last, no more than a tired man’s face in a shaving-glass, at certain angles, in certain winters.</p>`
+},
+
+/* ———————— CORRIDOR II: THE NEW WORLD ———————— */
+
+c2a: {
+  actor:'hyde', date:'THE TENTH OF JANUARY; THE BANK AT TEN',
+  text: s => `
+  <p>A night first in a common lodging-house, hat down, fists hidden. The bank was watched through the autumn — a murderer’s credit is a baited trap — but vigilance, like reward-money, runs out by January. At ten the doors open.</p>
+  <p>The account stands in the name of Edward Hyde; the signature slopes backward, as a hand was taught to slope in the first weeks of all this, when money was the question of everything. The teller counts out a fortune to the most hunted hand in England, and is bored.</p>`,
+  choices: s => [
+    {t:'The main counter, bold as brass: notes of small denomination, and no hurry about the counting.', to:'c2b'},
+    {t:'A letter of instruction and a messenger-boy: the money to come to the lodging-house, and Hyde’s face never to cross the marble at all.', to:'c2b', mark:'bymessenger'}
+  ]
+},
+
+c2b: {
+  actor:'hyde', date:'THE SAME DAY; THE DOCKS',
+  text: s => `
+  <p>Gravesend, and a forest of masts. Passage is a commodity like any other: money asks, money receives, and the sea has never yet required a man’s face to match his ticket. Two berths are on offer before dark.</p>`,
+  choices: s => [
+    {t:'The Glasgow steamer for New York: twelve days, crowds to be lost in, a city that reads no English placards twice.', to:'c2c', mark:'newyork'},
+    {t:'The wool clipper for Melbourne: three months of salt water, and the longest possible distance between a cane and a lane.', to:'c2c', mark:'melbourne'}
+  ]
+},
+
+c2c: {
+  actor:'hyde', date:'AT SEA',
+  text: s => `
+  <p>Here the file begins to starve. Of the crossing it holds a purser’s list with one name on it that answers nothing, and a complaint entered by the chief steward against a passenger who would not dine at table.</p>
+  <p>The confession, had it ever been written, might have told what the cabin nights were: no salt, no glass, no doctor — and no change. That is the fact the darkness turned over and over: sleep, which in the square used to give Jekyll to Hyde, at sea gives Hyde only to Hyde. The body has settled where the soul’s weight lay. Henry Jekyll is now a handwriting.</p>`,
+  choices: s => [
+    {t:'Keep the cabin the voyage long; feign sea-sickness; arrive as nobody.', to:'c2d'},
+    {t:'Walk the deck by night, until the watch learns to give the rail to the small passenger who looks at the water.', to:'c2d', mark:'deckwalker'}
+  ]
+},
+
+c2d: {
+  actor:'hyde', date:'LANDFALL',
+  text: s => `
+  <p>${ s.marks.has('newyork') ? 'New York swallows a man like weather.' : 'Melbourne is a gold-rush town grown respectable, and short of every profession.' } A life must be chosen the way a coat is stolen: quickly, and in a size that nearly fits.</p>
+  <p>The hands remember medicine — the eye for a fracture, the drachms and the scruples — whatever the face denies. And the streets down by the water have work of another shape, for a small man without visible fear.</p>`,
+  choices: s => [
+    {t:'A doctor’s brass plate in a poor quarter, under an invented name: let Jekyll’s competence keep Hyde’s body, and neither ask the other questions.', to:'c2e', mark:'plate'},
+    {t:'The waterfront: debt-collecting, dog-pits, doorways — work that fits this body as the clothes never did.', to:'c2e', mark:'waterfront'}
+  ]
+},
+
+c2e: {
+  actor:'frame', date:'THE AFTER-YEARS, IN FRAGMENTS',
+  text: s => `
+  <p>Of the after-years the file holds three letters and a bill of lading. ${ s.marks.has('plate') ? 'One letter, from a charity board, thanks a doctor whose name appears in no register for his services in the fever season.' : 'One letter, from a port magistrate, asks after a small man twice acquitted for want of witnesses willing.' } The last exhibit is an envelope of white salt, bought wholesale, never posted, never mixed.</p>`,
+  choices: s => [
+    {t:'Write once to Gaunt Street, unsigned, a single line — “the doctor is well” — and post it at the dock.', to:'e5', mark:'oneline'},
+    {t:'Write nothing, to anyone, ever.', to:'e5'}
+  ]
+},
+
+e5: {
+  actor:'frame', date:'WHERE THE FILE ENDS',
+  finis:{ name:'the unreturned', verdict:'You escaped the novel on the tenth of January.' },
+  text: s => `
+  <p>${ s.marks.has('oneline') ? 'The line reached Gaunt Street in June and lay on the lawyer’s desk a long while; he showed it to no one, and kept it; this clerk found it after his death, filed under nothing at all.' : 'Nothing ever came back across the water.' } In the square, after three calendar months of unexplained absence, ${ s.flags.will ? 'the will was proved at last: an absent benefactor inheriting from a disappeared man, paper feeding paper.' : 'there being no will, the estate sank into Chancery, where it feeds lawyers yet.' }</p>
+  <p>The file cannot follow where the story went. It closes on open water.</p>`
+},
+
+/* ———————— CORRIDOR III: THE SCAFFOLD ———————— */
+
+c3a: {
+  actor:'jekyll', date:'THE DAY AFTER THE MURDER',
+  text: s => `
+  <p>Utterson comes as a lawyer and stays as a witness. The telling takes an hour: the salt, the glass, the notebook of dates, the lane by the river. He hears it as he hears everything, without a face; then: “This is madness, or it is true; and either way, Harry, it belongs to the police.”</p>
+  <p>But a lawyer wants evidence before doctrine, and a friend wants one chance to disbelieve. A single proof would end all argument — and there is powder enough, and to spare.</p>`,
+  choices: s => [
+    {t:'Give him the proof of his own eyes: mix the draught on the business table, and drink it where he stands.', to:'c3b', mark:'shown'},
+    {t:'Spare him the sight; give him paper instead — the notebook, the two slopes of one handwriting — and let his clerk Mr. Guest set the hands side by side.', to:'c3b', mark:'papers'}
+  ]
+},
+
+c3b: {
+  actor:'jekyll', date:'THAT AFTERNOON; SCOTLAND YARD SENT FOR',
+  text: s => `
+  <p>${ s.marks.has('shown') ? 'The lawyer aged ten years in forty seconds, and never once looked away.' : 'Mr. Guest — the same student of hands whose arrangement of this file you are reading — laid the murderer’s note against a dinner invitation and said, at length: “a rather singular resemblance; the two hands are in many points identical: only differently sloped.” The lawyer sat very still.' } Then Inspector Newcomen of Scotland Yard is sent for — a man whose eye lights at a famous case like a lamp at dusk.</p>
+  <p>The charge is plain. What is not plain is the prisoner: the law holds a warrant for a small man named Edward Hyde, and has never contemplated a felon who can take the warrant off like a coat.</p>`,
+  choices: s => [
+    {t:'Surrender as Hyde: drink the draught a last time, hold out the small wrists, and let the name of Jekyll die clean and separate.', to:'c3c', mark:'ashyde'},
+    {t:'Surrender as Jekyll: give the law the tall respectable body and the whole confession, and let the court try what it cannot hold.', to:'c3c', mark:'asjekyll'}
+  ]
+},
+
+c3c: {
+  actor:'frame', date:'THE COMMITTAL; THE SHILLING PRESS',
+  text: s => `
+  <p>The press does not wait for the court. ${ s.marks.has('asjekyll') ? '<i>A WEST-END PHYSICIAN CHARGED — THE CAREW HORROR.</i>' : '<i>THE SOHO MONSTER TAKEN.</i>' } Placards; penny numbers; a run on the maid’s lodging-house for a look at her window.</p>`,
+  choices: s => [
+    {t:'Instruct counsel to plead the science: the hand that struck was the prisoner’s chemistry, not his nature.', to:'c3d', mark:'plead'},
+    {t:'Instruct counsel to plead nothing, and sit still through everything.', to:'c3d'}
+  ]
+},
+
+c3d: {
+  actor:'frame', date:'THE OLD BAILEY',
+  text: s => `
+  <p>The maid gives her evidence and faints afresh; the broken cane is produced, and Utterson, sworn, identifies the gift he made Henry Jekyll years ago${ s.marks.has('papers') ? '; Mr. Guest gives the evidence of hands, and the gallery does not breathe' : '' }. The prisoner in the dock is ${ s.marks.has('asjekyll') ? 'tall, grey, respectable, and the court cannot connect him to the lane at all — until his own counsel must' : 'small, and the flesh of the room creeps at him by an instinct no one names' }. ${ s.marks.has('plead') ? 'Counsel builds the chemistry a bridge that no juryman will cross.' : 'Counsel stands mute, as instructed.' }</p>
+  <p>There remains one demonstration the dock could make that no court in Christendom has seen.</p>`,
+  choices: s => [
+    {t:'Make it: ask for water, palm the folded powder, and change before the twelve faces of the jury.', to:'c3e', mark:'shownincourt'},
+    {t:'Make nothing; let the law keep the simple case it prefers.', to:'c3e'}
+  ]
+},
+
+c3e: {
+  actor:'frame', date:'THE CONDEMNED CELL',
+  text: s => `
+  <p>${ s.marks.has('late') ? ( s.marks.has('window') ? 'Taken at the window on a Sunday in February, tried in a spring the doctor never expected to see:' : 'Taken in the wreck of the cabinet door, the white phial still corked on the table:' ) : 'The verdict surprised no one; the sentence neither.' } ${ s.marks.has('shownincourt') ? 'The change before the jury emptied the gallery and settled nothing: the law hangs bodies, and it had one.' : '' } ${ s.marks.has('named') ? 'The name Henry Jekyll, said and said again, was entered in the record as an alias.' : '' }</p>
+  <p>In the margin of an earlier page of this file, in the doctor’s hand, stands the question the cell now asks in earnest: “Will Hyde die upon the scaffold? or will he find courage to release himself at the last moment?” In the cell there is a chaplain, a lamp${ s.marks.has('late') ? ', and nothing else at all: the old salt is spent, and the body is Hyde’s for good' : s.marks.has('shownincourt') ? ', and an empty waistcoat seam: the last of the old powder went to the jury' : ', and — sewn into a waistcoat seam — one paper of the old powder, saved the way a man saves a key to a house he has burned down' }.</p>`,
+  choices: s => [
+    {t:'The scaffold, then: stand under the beam as whatever the morning finds you.', to:'e6'},
+    {t:'Cheat them of Hyde: the powder in the night, and let the morning hang a tall stranger the crowd has never seen.', to:'e6', mark:'cheated', show: s => !s.marks.has('late') && !s.marks.has('asjekyll') && !s.marks.has('shownincourt')},
+    {t:'Give the crowd its monster after all: the powder in the night, and let them wake to a small stranger in a tall man’s irons.', to:'e6', mark:'monster', show: s => !s.marks.has('late') && s.marks.has('asjekyll') && !s.marks.has('shownincourt')},
+    {t:'Refuse the chaplain, refuse the mask, and go up the steps cursing in two voices.', to:'e6', mark:'cursing', show: s => s.marks.has('late') || s.marks.has('shownincourt')}
+  ]
+},
+
+e6: {
+  actor:'frame', date:'A HANGING MORNING',
+  finis:{ name:'the scaffold', verdict:'You died on the law’s schedule, not the author’s.' },
+  text: s => `
+  <p>${ s.marks.has('cheated') ? 'The drop took a tall man. The crowd, promised a monster the size of its fear, hissed at the substitution as at a bad play; the surgeons afterwards said nothing, and were paid to.' : s.marks.has('monster') ? 'The drop took a small man after all — the warders swearing to a tall one at lock-up — and the crowd got the monster the placards had promised. The science pleaded in vain at the trial was proved overnight, to empty benches.' : s.marks.has('ashyde') ? 'The drop took a small man, and the crowd went home satisfied that evil is a separate size. In the square, a tall doctor was mourned as disappeared' + ( s.flags.will ? '; and his eyesore of a will lay in Utterson’s safe, leaving all he had to the man just hanged.' : '.' ) : 'The drop fell once; the law recorded one name; this file keeps both.' }</p>
+  <p>Somewhere in the crowd, no doubt, stood a man of rugged countenance, never lighted by a smile.</p>`
+},
+
+};
+
+/* ———————— ENGINE ———————— */
+
+const CANON = ['s1','s2','s3','s4','s5','s6','s7','s8','s8b','s9','s10','s11','s11k','s11b',
+  's12','s13','s14','s15','s16','s17','s18','s19','s20','s21','s22','s22b','s22c','s23','e1'];
+
+let S;
+function reset(){
+  S = { flags:{lanyon:false,account:false,assay:false,spared:false,will:false},
+        marks:new Set(), canon:new Set(), departures:[] };
+  show('title');
+}
+
+function val(v){ return (typeof v === 'function') ? v(S) : v; }
+
+function choose(c, node){
+  if (c.set) Object.assign(S.flags, c.set);
+  if (c.mark) S.marks.add(c.mark);
+  if (c.mark2) S.marks.add(c.mark2);
+  if (c.dep) S.departures.push({ date: val(node.date) || 'the file’s opening', what: c.dep });
+  show(c.to);
+}
+
+function finisBlock(node){
+  const f = node.finis;
+  let left;
+  if (S.departures.length === 0){
+    left = '<div class="account">You never left the path.</div>';
+  } else {
+    left = '<div class="account">Where you left the path:</div><ul>' +
+      S.departures.map(d => '<li>' + d.date.toLowerCase() + ' — ' + d.what + '</li>').join('') + '</ul>';
+  }
+  return `<div class="finis">
+    <div class="word">FINIS</div>
+    <div class="name">${f.name}</div>
+    <div class="verdict">${f.verdict}</div>
+    <div class="account">Of the ${CANON.length} papers of the canon, you received ${S.canon.size}.</div>
+    ${left}
+  </div>`;
+}
+
+function show(id){
+  if (id === 'RESET'){ reset(); return; }
+  const node = NODES[id];
+  if (CANON.includes(id)) S.canon.add(id);
+  document.body.classList.toggle('hyde', node.actor === 'hyde');
+  const sheet = document.getElementById('sheet');
+  let html = '';
+  if (node.special === 'title'){
+    html += '<div class="runhead">the escapable canon &nbsp;·&nbsp; volume: london, 18—</div>';
+    html += val(node.text);
+  } else {
+    html += '<div class="runhead">the papers in the case</div>';
+    const d = val(node.date);
+    if (d) html += `<div class="dateline">${d}</div>`;
+    html += `<div class="prose">${val(node.text)}</div>`;
+  }
+  if (node.finis) html += finisBlock(node);
+  const choices = node.finis
+    ? [{t:'begin again.', to:'RESET', bare:true}]
+    : val(node.choices).filter(c => !c.show || c.show(S));
+  html += '<div class="choices">' + choices.map((c,i) =>
+    `<button class="${c.bare ? 'bare' : ''}" data-i="${i}">${c.t}</button>`).join('') + '</div>';
+  sheet.innerHTML = html;
+  sheet.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = choices[Number(btn.dataset.i)];
+      if (c.to === 'RESET'){ reset(); } else { choose(c, node); }
+    });
+  });
+  window.scrollTo(0, 0);
+}
+
+reset();
+</script>
+</body>
+</html>
