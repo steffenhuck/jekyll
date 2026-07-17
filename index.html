@@ -60,7 +60,7 @@ h1{
 .finis{border:3px double var(--ink); padding:1.6rem 1.3rem; margin-top:2rem; text-align:center}
 .finis .word{font-size:.7rem; letter-spacing:.5em; color:var(--wax); margin-bottom:.7rem}
 .finis .name{font-variant:small-caps; letter-spacing:.24em; font-size:1.25rem; margin-bottom:.9rem}
-.finis .verdict{font-style:italic; margin-bottom:1rem}
+.finis .verdict{font-style:italic; max-width:32em; margin:0 auto; line-height:1.7}
 .finis .account{font-size:.85rem; color:var(--muted)}
 .finis ul{list-style:none; margin-top:.5rem; font-size:.82rem; font-style:italic; color:var(--muted)}
 .finis li{margin:.2rem 0}
@@ -456,7 +456,12 @@ s23: {
 
 e1: {
   actor:'frame', date:'MARCH, 18—; THE LAST NIGHT OF THE CASE',
-  finis:{ name:'his true hour of death', verdict:'You died on Stevenson’s schedule.' },
+  finis:{ name:'his true hour of death', verdict: s =>
+    s.departures.length === 0
+      ? 'This is the ending Stevenson wrote. Every paper fell into its place — the accursed night, the lane, the letter to Lanyon, the phial as the door came down — and Henry Jekyll died on the author’s schedule. You did not steer him; you read him.'
+      : 'You pulled against the book, and the book was stronger: whatever you tried along the way, the story closed over it, and the phial stood waiting in the cabinet exactly where Stevenson left it.'
+        + ( s.flags.spared ? ' One difference outlives you — Lanyon, spared the midnight sight, is alive in these papers, and never learns what errand he ran.' : '' )
+        + ( s.marks.has('burned') ? ' And the confession went up the chimney: you died on the author’s schedule, but you took his explanation with you.' : '' ) },
   text: s => `
   <p>The door fell at the fifth blow. In the quiet lamplight, a good fire, the kettle singing its thin strain, the things laid out for tea: “the quietest room, you would have said… the most commonplace that night in London” — and right in the middle, still twitching, the body of a small man in clothes far too large for him. The smell of kernels hung on the air; the crushed phial was in the hand. “We have come too late,” said Utterson, “whether to save or punish.”</p>
   ${ s.marks.has('burned')
@@ -515,7 +520,8 @@ a3: {
 
 e3: {
   actor:'frame', date:'AN ORDINARY DEATH, MANY YEARS ON',
-  finis:{ name:'the unopened door', verdict:'You left the story before it noticed you.' },
+  finis:{ name:'the unopened door', verdict: s =>
+    'In the novel the nerve comes, the draught is drunk, and everything else follows from that one swallow. You refused it — three times over, which is what refusing costs — and the strange case never became a case: no Hyde, no lane, no last night; only a respectable doctor the book had no further use for. You left the story before it noticed you.' },
   text: s => `
   <p>Henry Jekyll died in his bed${ s.marks.has('bequeathed') ? '; a sealed parcel went to the Royal Society, where the fifty years are not yet run' : ', and the fire had had the rest' }. Utterson outlived and mourned him simply, having nothing in his safe to dread.</p>
   <p>There is no strange case in these papers. Strictly, there are no papers. The clerk has arranged an absence.</p>`
@@ -547,7 +553,8 @@ r2: {
 
 e2: {
   actor:'jekyll', date:'SPRING AGAIN',
-  finis:{ name:'dr. jekyll was quite at ease', verdict:'You escaped the novel by the second change of colour.' },
+  finis:{ name:'dr. jekyll was quite at ease', verdict: s =>
+    'This is not the ending Stevenson wrote: in the novel the first supply of the salt is never assayed, its impurity never named, and the whole tragedy hangs from a flaw nobody thought to measure. One night’s caution with a scruple of powder, two years before the end, undid the book — Hyde was chemistry after all, and chemistry could be mended.' },
   text: s => `
   <p>The fog lifted that year the way it never does. The cheval-glass — which “had seen some strange things” and would see no more — went to a dealer off the Portobello Road; the by-street door got a new coat of paint, a bell, and a knocker${ s.flags.will ? '; the will came home from Gaunt Street and went into the fire, and Utterson watched it burn with the nearest thing to a smile this file records' : '' }.</p>
   <p>${ s.flags.spared ? 'Lanyon dined at the doctor’s left hand every Sunday after, and never asked; being, beneath the pedantry, precisely as good a man as advertised.' : 'One chair stayed empty at the Sunday dinners — sorrow keeps its hat on even in a happy house — but even that grief wore, in time, to a warmth.' } He was busy, he was much in the open air, he did good; “his face seemed to open and brighten, as if with an inward consciousness of service” — and no qualm ever again came to collect.</p>
@@ -623,7 +630,8 @@ c1f: {
 
 e4: {
   actor:'frame', date:'TWO OLD MEN',
-  finis:{ name:'a new province of knowledge', verdict:'You escaped the novel in consulting hours.' },
+  finis:{ name:'a new province of knowledge', verdict: s =>
+    'In the novel Lanyon meets the transformation as a midnight horror and is dead of it within the month. You carried it to him in daylight, as a patient, and the same sight taken on his own terms made him a colleague instead of a casualty: the book’s first victim turned physician, and both men outlived the story.' },
   text: s => `
   <p>They quarrelled to the end, publicly, at one another’s tables, about transcendental medicine — the one calling the other a hide-bound pedant, the pedant giving as good — and each kept the other’s secret like a second spine. ${ s.marks.has('legacy') ? 'The sealed parcel waits at the College still; the fifty years are not yet run.' : 'The fire took four volumes and a notebook of dates; the survivor watched it burn, lived eighteen months more, and said nothing.' }</p>
   <p>Of Edward Hyde the file holds, at the last, no more than a tired man’s face in a shaving-glass, at certain angles, in certain winters.</p>`
@@ -686,7 +694,8 @@ c2e: {
 
 e5: {
   actor:'frame', date:'WHERE THE FILE ENDS',
-  finis:{ name:'the unreturned', verdict:'You escaped the novel on the tenth of January.' },
+  finis:{ name:'the unreturned', verdict: s =>
+    'In the novel Hyde is penned in London by his own precautions, and on the ninth of January there is nowhere left to turn but Lanyon’s consulting room. You had once given him a bank account, and so a door: he took the money and the tide, and the book lost him at sea — Henry Jekyll surviving only as a handwriting, in a body the story could no longer reach.' },
   text: s => `
   <p>${ s.marks.has('oneline') ? 'The line reached Gaunt Street in June and lay on the lawyer’s desk a long while; he showed it to no one, and kept it; this clerk found it after his death, filed under nothing at all.' : 'Nothing ever came back across the water.' } In the square, after three calendar months of unexplained absence, ${ s.flags.will ? 'the will was proved at last: an absent benefactor inheriting from a disappeared man, paper feeding paper.' : 'there being no will, the estate sank into Chancery, where it feeds lawyers yet.' }</p>
   <p>The file cannot follow where the story went. It closes on open water.</p>`
@@ -752,7 +761,9 @@ c3e: {
 
 e6: {
   actor:'frame', date:'A HANGING MORNING',
-  finis:{ name:'the scaffold', verdict:'You died on the law’s schedule, not the author’s.' },
+  finis:{ name:'the scaffold', verdict: s => s.marks.has('late')
+    ? 'In the novel the axe loses the race: the phial is drunk before the door falls, and no court ever sees Edward Hyde. You let them take him alive, and the book’s own unanswered question — “will Hyde die upon the scaffold?” — got its answer from a hangman.'
+    : 'In the novel nobody ever stands trial: the truth is sealed in an envelope for Utterson, and “will Hyde die upon the scaffold?” stays a dying man’s rhetorical question. You walked the case into court the day after the lane, gave the law the one prisoner it had no cell that could hold, and made the question literal.' },
   text: s => `
   <p>${ s.marks.has('cheated') ? 'The drop took a tall man. The crowd, promised a monster the size of its fear, hissed at the substitution as at a bad play; the surgeons afterwards said nothing, and were paid to.' : s.marks.has('monster') ? 'The drop took a small man after all — the warders swearing to a tall one at lock-up — and the crowd got the monster the placards had promised. The science pleaded in vain at the trial was proved overnight, to empty benches.' : s.marks.has('ashyde') ? 'The drop took a small man, and the crowd went home satisfied that evil is a separate size. In the square, a tall doctor was mourned as disappeared' + ( s.flags.will ? '; and his eyesore of a will lay in Utterson’s safe, leaving all he had to the man just hanged.' : '.' ) : 'The drop fell once; the law recorded one name; this file keeps both.' }</p>
   <p>Somewhere in the crowd, no doubt, stood a man of rugged countenance, never lighted by a smile.</p>`
@@ -784,19 +795,10 @@ function choose(c, node){
 
 function finisBlock(node){
   const f = node.finis;
-  let left;
-  if (S.departures.length === 0){
-    left = '<div class="account">You never left the path.</div>';
-  } else {
-    left = '<div class="account">Where you left the path:</div><ul>' +
-      S.departures.map(d => '<li>' + d.date.toLowerCase() + ' — ' + d.what + '</li>').join('') + '</ul>';
-  }
   return `<div class="finis">
     <div class="word">FINIS</div>
     <div class="name">${f.name}</div>
-    <div class="verdict">${f.verdict}</div>
-    <div class="account">Of the ${CANON.length} papers of the canon, you received ${S.canon.size}.</div>
-    ${left}
+    <div class="verdict">${val(f.verdict)}</div>
   </div>`;
 }
 
